@@ -28,8 +28,12 @@ class Model1(nn.Module):
         self.conv4_stage1 = nn.Conv2d(128, 32, kernel_size=5, padding=2)
         self.conv5_stage1 = nn.Conv2d(32, 512, kernel_size=9, padding=4)
         self.conv6_stage1 = nn.Conv2d(512, 512, kernel_size=1)
-        self.conv7_stage1 = nn.Conv2d(512, 15, kernel_size=1)
+        self.conv7_stage1 = nn.Conv2d(512, 17, kernel_size=1)   #inace treba 15
         self.pool_center_lower = None
+        center_map_np = np.random.randint(2, size=(17, 368, 368))
+        center_map = center_map_np.tolist()
+        center_map_tensor = torch.tensor(center_map, dtype=torch.float16)
+        self.center_map = torch.nn.Parameter(center_map_tensor)
         
     def _initialize_weights(self):
             for m in self.modules():
@@ -61,6 +65,10 @@ class Model2(nn.Module):
         self.conv2_stage2 = nn.Conv2d(128, 128, kernel_size=9, padding=4)
         self.conv3_stage2 = nn.Conv2d(128, 128, kernel_size=9, padding=4)
         self.conv4_stage2 = nn.Conv2d(128, 32, kernel_size=5, padding=2)
+        center_map_np = np.random.randint(2, size=(17, 368, 368))
+        center_map = center_map_np.tolist()
+        center_map_tensor = torch.tensor(center_map, dtype=torch.float16)
+        self.center_map = torch.nn.Parameter(center_map_tensor)
 
     def _initialize_weights(self):
             for m in self.modules():
@@ -88,6 +96,10 @@ class ModelM2(nn.Module):
         self.Mconv3 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv4 = nn.Conv2d(128, 128, kernel_size=1)
         self.Mconv5 = nn.Conv2d(128, 15, kernel_size=1)
+        center_map_np = np.random.randint(2, size=(17, 368, 368))
+        center_map = center_map_np.tolist()
+        center_map_tensor = torch.tensor(center_map, dtype=torch.float16)
+        self.center_map = torch.nn.Parameter(center_map_tensor)
 
     def _initialize_weights(self):
             for m in self.modules():
@@ -113,6 +125,10 @@ class ModelM3(nn.Module):
         self.Mconv3 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv4 = nn.Conv2d(128, 128, kernel_size=1)
         self.Mconv5 = nn.Conv2d(128, 17, kernel_size=1)
+        center_map_np = np.random.randint(2, size=(17, 368, 368))
+        center_map = center_map_np.tolist()
+        center_map_tensor = torch.tensor(center_map, dtype=torch.float16)
+        self.center_map = torch.nn.Parameter(center_map_tensor)
 
     def _initialize_weights(self):
             for m in self.modules():
@@ -163,6 +179,11 @@ class Model(nn.Module):
         center_map = center_map_np.tolist()
         center_map_tensor = torch.tensor(center_map, dtype=torch.float16)
         self.center_map = torch.nn.Parameter(center_map_tensor)
+        data_augmentation = transforms.Compose([
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(5),  # 10 degrees is approximately 0.1 radians
+            transforms.RandomResizedCrop(180, scale=(0.9, 1.0))  # Random zoom between 90% and 100%
+        ]) 
         
 
     def _initialize_weights(self):
@@ -173,6 +194,7 @@ class Model(nn.Module):
                         constant_initializer()(m.bias)
     
     def forward(self, x): #x-image
+        x = data_augmentation(x)
         output1 = self.model1(x)
         output2, input5 = self.model2(x)
         outputAVE = self.modelAVE(self.center_map)
