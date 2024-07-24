@@ -1,4 +1,4 @@
-from utilss import get_accuracy, plot_curve, keep_store_dict, store_dict_to_disk
+from utilss import get_accuracy_train, get_accuracy_test, plot_curve, keep_store_dict, store_dict_to_disk
 from tqdm import tqdm
 from test import test
 import torch
@@ -20,7 +20,7 @@ def train(model, num_epochs, train_loader, store_dict, test_loader, device, loss
         train_acc = 0.0
         model = model.train()
         train_data_loader = DataLoader(train_loader, batch_size=batch_size, shuffle=True)
-        print(len(train_data_loader))
+        print(train_data_loader)
         valid_data_loader = DataLoader(test_loader, batch_size=batch_size, shuffle=True)
         #train_loader.used = []
         for batch_num, (x, y) in tqdm(enumerate(train_data_loader)):
@@ -29,21 +29,73 @@ def train(model, num_epochs, train_loader, store_dict, test_loader, device, loss
             y = y.to(device)
 
             y_hat = model(x)
-            print(y.shape)
-            print(y_hat.shape)
             if y_hat is None:
                 raise ValueError("Model output y_hat is None")
             loss = loss_function(y_hat.float(), y.float())
 
             train_running_loss += loss.detach().item()
-            train_acc += get_accuracy(l1=y, l2=y)
-            
+            train_acc += get_accuracy_train(l1=y_hat, l2=y)
+
             #optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            for param in model.parameters():
-                param1 = param.cpu()
-                store_dict = keep_store_dict(curve=param1, label='after_optimizer_step', store_dict=store_dict)
+        
+            #             # Measure time for transferring data to the device
+            #             start_time = time.time()
+            #             x = x.to(device)
+            #             y = y.to(device)
+            #             end_time = time.time()
+            #             print(f"Time to transfer data to device: {end_time - start_time:.6f} seconds")
+
+            #             # Measure time for forward pass
+            #             start_time = time.time()
+            #             y_hat = model(x)
+            #             if y_hat is None:
+            #                 raise ValueError("Model output y_hat is None")
+            #             end_time = time.time()
+            #             print(f"Time for forward pass: {end_time - start_time:.6f} seconds")
+
+            #             # Measure time for loss computation
+            #             start_time = time.time()
+            #             loss = loss_function(y_hat.float(), y.float())
+            #             end_time = time.time()
+            #             print(f"Time for loss computation: {end_time - start_time:.6f} seconds")
+
+            #             train_running_loss += loss.detach().item()
+
+            #             # Measure time for accuracy computation
+            #             start_time = time.time()
+            #             train_acc += get_accuracy(l1=y_hat, l2=y)
+            #             end_time = time.time()
+            #             print(f"Time for accuracy computation: {end_time - start_time:.6f} seconds")
+
+            #             # Measure time for backward pass
+            #             start_time = time.time()
+            #             loss.backward()
+            #             end_time = time.time()
+            #             print(f"Time for backward pass: {end_time - start_time:.6f} seconds")
+
+            #             # Measure time for optimizer step
+            #             start_time = time.time()
+            #             optimizer.step()
+            #             end_time = time.time()
+            #             print(f"Time for optimizer step: {end_time - start_time:.6f} seconds")
+
+            #             # Optional: measure time for zeroing gradients
+            #             #start_time = time.time()
+            #             #optimizer.zero_grad()
+            #             #end_time = time.time()
+            #             #print(f"Time to zero gradients: {end_time - start_time:.6f} seconds")
+            
+        #time for storing dict
+        #start_time = time.time()
+        for param in model.parameters():
+            param1 = param.cpu()
+            store_dict = keep_store_dict(curve=param1, label='after_optimizer_step', store_dict=store_dict)
+        #end_time = time.time()
+        #print(f"time for storing dict: {end_time - start_time:.6f} seconds")
+            
+            
         epoch_loss = train_running_loss / batch_num
         epoch_acc = train_acc / batch_num
         store_dict = keep_store_dict(curve=epoch_loss, label='train_loss', store_dict=store_dict)

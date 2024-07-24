@@ -28,9 +28,9 @@ class Model1(nn.Module):
         self.conv4_stage1 = nn.Conv2d(128, 32, kernel_size=5, padding=2)
         self.conv5_stage1 = nn.Conv2d(32, 512, kernel_size=9, padding=4)
         self.conv6_stage1 = nn.Conv2d(512, 512, kernel_size=1)
-        self.conv7_stage1 = nn.Conv2d(512, 17, kernel_size=1)   #inace treba 15
+        self.conv7_stage1 = nn.Conv2d(512, 15, kernel_size=1)   #inace treba 15
         self.pool_center_lower = None
-        center_map_np = np.random.randint(2, size=(17, 368, 368))
+        center_map_np = np.random.randint(2, size=(8, 17, 368, 368))
         center_map = center_map_np.tolist()
         center_map_tensor = torch.tensor(center_map, dtype=torch.float16)
         self.center_map = torch.nn.Parameter(center_map_tensor)

@@ -14,33 +14,35 @@ def sample_to_pil_image(sample: np.ndarray, image_shape):
         new_size = (140, 140) 
     return image.resize(size=new_size)
 
-def get_accuracy(l1, l2):
+def get_accuracy_train(l1, l2):
     list1 = l1.cpu()
     list1 = list1.detach().numpy()
     list2 = l2.cpu()
     list2 = list2.detach().numpy()
-    size = list1.shape
+    
+    size_l1 = list1.shape
     acc = 0
 
-    koordsx1 = np.zeros((size[0]))
-    koordsy1 = np.zeros((size[0]))
-    koodrsx2 = np.zeros((size[0]))
-    koordsy2 = np.zeros((size[0]))
+    koordsx1 = np.zeros((size_l1[1]))
+    koordsy1 = np.zeros((size_l1[1]))
+    koodrsx2 = np.zeros((size_l1[1]))
+    koordsy2 = np.zeros((size_l1[1]))
+    
+    for o in range(size_l1[0]):
+        for i in range(size_l1[1]):
+            for j in range(size_l1[2]):
+                for k in range(size_l1[3]):
+                    if list1[o][i][j][k] == 1:
+                        koordsx1[i] += k 
+                        koordsy1[i] += j 
+                    if list2[o][i][j][k] == 1:
+                        koodrsx2[i] += k
+                        koordsy2[i] += j
 
-    for i in range(size[0]):
-        for j in range(size[1]):
-            for k in range(size[2]):
-                if list1[i][j][k] == 1:
-                    koordsx1[i] += k 
-                    koordsy1[i] += j 
-                if list2[i][j][k] == 1:
-                    koodrsx2[i] += k
-                    koordsy2[i] += j
-
-        koordsx1[i] /= size[1]**2
-        koodrsx2[i] /= size[1]**2
-        koordsy1[i] /= size[1]**2
-        koordsy2[i] /= size[1]**2
+        koordsx1[i] /= size_l1[1]**2
+        koodrsx2[i] /= size_l1[1]**2
+        koordsy1[i] /= size_l1[1]**2
+        koordsy2[i] /= size_l1[1]**2
 
     distancex = koodrsx2 - koordsx1
     distancey = koordsy2 - koordsy1
@@ -49,7 +51,42 @@ def get_accuracy(l1, l2):
     for i in range(len(list1)):
         if euclidian_distance[i] <= 3:
             acc += 1
-    return acc / size[0]
+    return acc / size_l1[0]
+
+def get_accuracy_test(l1, l2):
+    list1 = np.array(l1)
+    list2 = np.array(l2)
+    size_l1 = list1.shape
+    acc = 0
+
+    koordsx1 = np.zeros((size_l1[0]))
+    koordsy1 = np.zeros((size_l1[0]))
+    koodrsx2 = np.zeros((size_l1[0]))
+    koordsy2 = np.zeros((size_l1[0]))
+
+    for i in range(size_l1[0]):
+        for j in range(size_l1[1]):
+            for k in range(size_l1[2]):
+                if list1[i][j][k] == 1:
+                    koordsx1[i] += k 
+                    koordsy1[i] += j 
+                if list2[i][j][k] == 1:
+                    koodrsx2[i] += k
+                    koordsy2[i] += j
+                
+        koordsx1[i] /= size_l1[1] ** 2
+        koodrsx2[i] /= size_l1[1] ** 2
+        koordsy1[i] /= size_l1[1] ** 2
+        koordsy2[i] /= size_l1[1] ** 2
+
+    distancex = koodrsx2 - koordsx1
+    distancey = koordsy2 - koordsy1
+    euclidian_distance = np.sqrt(np.power(distancex, np.array([2] * distancex.shape[0])) + 
+                                 np.power(distancey, np.array([2] * distancex.shape[0])))
+    for i in range(len(list1)):
+        if euclidian_distance[i] <= 3:
+            acc += 1
+    return acc / size_l1[0]
 
 def plot_curve(curves: Tuple[List], labels: Tuple[List], plot_name):
     
