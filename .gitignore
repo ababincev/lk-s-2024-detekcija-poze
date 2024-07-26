@@ -1,11 +1,17 @@
 proba.py
 main.ipynb
 mpii_human_pose.csv
+mpii_new.csv
 images
 images_extract
 images_test
 images_training
+images_valid
 heat_maps_test
 heat_maps_training
 heat_maps_training_plain
 heat_maps_test_plain
+heat_maps_valid_plain
+*.pth
+.ipynb_checkpoints
+__pycache__
